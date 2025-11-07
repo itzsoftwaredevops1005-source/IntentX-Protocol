@@ -1,54 +1,45 @@
-import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import IntentCard from "./IntentCard";
-import { FileX } from "lucide-react";
+import { FileX, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useWallet } from "@/contexts/WalletContext";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getIntentsByUser, cancelIntent } from "@/lib/api";
+import type { Intent } from "@shared/schema";
 
 export default function IntentDashboard() {
   const { toast } = useToast();
-  
-  const [intents] = useState([
-    {
-      id: "1",
-      sourceToken: "ETH",
-      targetToken: "USDC",
-      sourceAmount: "1.5",
-      status: "executed" as const,
-      createdAt: "2025-01-15T10:30:00",
-      executedAmount: "2775.00",
+  const { address } = useWallet();
+  const queryClient = useQueryClient();
+
+  const { data: intents = [], isLoading } = useQuery<Intent[]>({
+    queryKey: ["/api/intents", address],
+    enabled: !!address,
+    queryFn: () => getIntentsByUser(address!),
+    refetchInterval: 5000, // Refetch every 5 seconds to see executor updates
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: cancelIntent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/intents", address] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      toast({
+        title: "Intent Cancelled",
+        description: "Your swap intent has been cancelled successfully.",
+      });
     },
-    {
-      id: "2",
-      sourceToken: "WBTC",
-      targetToken: "DAI",
-      sourceAmount: "0.05",
-      status: "pending" as const,
-      createdAt: "2025-01-15T11:00:00",
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to Cancel Intent",
+        description: error.message,
+        variant: "destructive",
+      });
     },
-    {
-      id: "3",
-      sourceToken: "USDT",
-      targetToken: "ETH",
-      sourceAmount: "5000",
-      status: "pending" as const,
-      createdAt: "2025-01-15T09:15:00",
-    },
-    {
-      id: "4",
-      sourceToken: "DAI",
-      targetToken: "WBTC",
-      sourceAmount: "10000",
-      status: "cancelled" as const,
-      createdAt: "2025-01-15T08:00:00",
-    },
-  ]);
+  });
 
   const handleCancel = (id: string) => {
-    console.log("Cancelling intent:", id);
-    toast({
-      title: "Intent Cancelled",
-      description: "Your swap intent has been cancelled successfully.",
-    });
+    cancelMutation.mutate(id);
   };
 
   const filterIntents = (status?: string) => {
@@ -62,6 +53,16 @@ export default function IntentDashboard() {
       <p className="text-lg font-medium text-muted-foreground">{message}</p>
     </div>
   );
+
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-6xl mx-auto">
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-6xl mx-auto">
@@ -96,7 +97,13 @@ export default function IntentDashboard() {
               {intents.map((intent) => (
                 <IntentCard
                   key={intent.id}
-                  {...intent}
+                  id={intent.id}
+                  sourceToken={intent.sourceToken}
+                  targetToken={intent.targetToken}
+                  sourceAmount={intent.sourceAmount}
+                  status={intent.status as "pending" | "executed" | "cancelled"}
+                  createdAt={intent.createdAt.toString()}
+                  executedAmount={intent.executedAmount || undefined}
                   onCancel={intent.status === "pending" ? handleCancel : undefined}
                 />
               ))}
@@ -110,7 +117,16 @@ export default function IntentDashboard() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filterIntents("pending").map((intent) => (
-                <IntentCard key={intent.id} {...intent} onCancel={handleCancel} />
+                <IntentCard
+                  key={intent.id}
+                  id={intent.id}
+                  sourceToken={intent.sourceToken}
+                  targetToken={intent.targetToken}
+                  sourceAmount={intent.sourceAmount}
+                  status="pending"
+                  createdAt={intent.createdAt.toString()}
+                  onCancel={handleCancel}
+                />
               ))}
             </div>
           )}
@@ -122,7 +138,16 @@ export default function IntentDashboard() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filterIntents("executed").map((intent) => (
-                <IntentCard key={intent.id} {...intent} />
+                <IntentCard
+                  key={intent.id}
+                  id={intent.id}
+                  sourceToken={intent.sourceToken}
+                  targetToken={intent.targetToken}
+                  sourceAmount={intent.sourceAmount}
+                  status="executed"
+                  createdAt={intent.createdAt.toString()}
+                  executedAmount={intent.executedAmount || undefined}
+                />
               ))}
             </div>
           )}
@@ -134,7 +159,15 @@ export default function IntentDashboard() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filterIntents("cancelled").map((intent) => (
-                <IntentCard key={intent.id} {...intent} />
+                <IntentCard
+                  key={intent.id}
+                  id={intent.id}
+                  sourceToken={intent.sourceToken}
+                  targetToken={intent.targetToken}
+                  sourceAmount={intent.sourceAmount}
+                  status="cancelled"
+                  createdAt={intent.createdAt.toString()}
+                />
               ))}
             </div>
           )}

@@ -11,6 +11,7 @@ export const users = pgTable("users", {
 
 export const intents = pgTable("intents", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  blockchainIntentId: text("blockchain_intent_id"), // On-chain intent ID
   userAddress: text("user_address").notNull(),
   sourceToken: text("source_token").notNull(),
   targetToken: text("target_token").notNull(),

@@ -19,10 +19,14 @@ import {
 import { SUPPORTED_TOKENS } from "@/lib/web3";
 import { useWallet } from "@/contexts/WalletContext";
 import { useToast } from "@/hooks/use-toast";
+import { createIntent } from "@/lib/api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function SwapCard() {
-  const { isConnected, connect } = useWallet();
+  const { isConnected, connect, address, signMessage } = useWallet();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [fromToken, setFromToken] = useState("ETH");
   const [toToken, setToToken] = useState("USDC");
   const [fromAmount, setFromAmount] = useState("");
@@ -30,12 +34,64 @@ export default function SwapCard() {
   const [customSlippage, setCustomSlippage] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  const createIntentMutation = useMutation({
+    mutationFn: async (data: {
+      sourceToken: string;
+      targetToken: string;
+      sourceAmount: string;
+      minTargetAmount: string;
+      slippage: string;
+    }) => {
+      if (!address) throw new Error("Wallet not connected");
+
+      // Create comprehensive message with all fields and timestamp for Account Abstraction
+      const timestamp = Date.now();
+      const message = JSON.stringify({
+        action: "createIntent",
+        sourceToken: data.sourceToken,
+        targetToken: data.targetToken,
+        sourceAmount: data.sourceAmount,
+        minTargetAmount: data.minTargetAmount,
+        slippage: data.slippage,
+        timestamp,
+      });
+      const signature = await signMessage(message);
+
+      return createIntent({
+        userAddress: address,
+        sourceToken: data.sourceToken,
+        targetToken: data.targetToken,
+        sourceAmount: data.sourceAmount,
+        minTargetAmount: data.minTargetAmount,
+        slippage: data.slippage,
+        status: "pending",
+        signature,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/intents", address] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      toast({
+        title: "Intent Created! 🎉",
+        description: `Your swap intent has been created and will be executed shortly.`,
+      });
+      setFromAmount("");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to Create Intent",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSwapTokens = () => {
     setFromToken(toToken);
     setToToken(fromToken);
   };
 
-  const handleCreateIntent = () => {
+  const handleCreateIntent = async () => {
     if (!fromAmount || parseFloat(fromAmount) <= 0) {
       toast({
         title: "Invalid Amount",
@@ -45,16 +101,15 @@ export default function SwapCard() {
       return;
     }
 
-    console.log("Creating intent:", {
-      fromToken,
-      toToken,
-      fromAmount,
-      slippage: customSlippage || slippage,
-    });
+    const estimatedOutput = (parseFloat(fromAmount) * 1850).toFixed(6);
+    const finalSlippage = customSlippage || slippage;
 
-    toast({
-      title: "Intent Created! 🎉",
-      description: `Swapping ${fromAmount} ${fromToken} to ${toToken} with ${customSlippage || slippage}% slippage.`,
+    createIntentMutation.mutate({
+      sourceToken: fromToken,
+      targetToken: toToken,
+      sourceAmount: fromAmount,
+      minTargetAmount: estimatedOutput,
+      slippage: finalSlippage,
     });
   };
 
@@ -207,9 +262,10 @@ export default function SwapCard() {
             size="lg"
             className="w-full h-14 text-base hover-elevate active-elevate-2"
             onClick={handleCreateIntent}
+            disabled={createIntentMutation.isPending}
             data-testid="button-create-intent"
           >
-            Create Intent
+            {createIntentMutation.isPending ? "Creating Intent..." : "Create Intent"}
           </Button>
         ) : (
           <Button

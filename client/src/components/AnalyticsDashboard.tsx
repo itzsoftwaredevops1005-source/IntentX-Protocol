@@ -1,33 +1,54 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Activity, DollarSign, Zap } from "lucide-react";
+import { TrendingUp, Activity, DollarSign, Zap, Loader2 } from "lucide-react";
 import { formatAmount } from "@/lib/web3";
+import { useQuery } from "@tanstack/react-query";
+import { getAnalytics } from "@/lib/api";
+import { useWallet } from "@/contexts/WalletContext";
 
 export default function AnalyticsDashboard() {
+  const { address } = useWallet();
+  
+  const { data: analytics, isLoading } = useQuery({
+    queryKey: ["/api/analytics", address],
+    queryFn: () => getAnalytics(address || undefined),
+    refetchInterval: 10000, // Refetch every 10 seconds
+  });
+
+  if (isLoading || !analytics) {
+    return (
+      <div className="w-full max-w-6xl mx-auto">
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
   const stats = [
     {
       title: "Total Intents",
-      value: "1,247",
+      value: analytics.totalIntents.toString(),
       change: "+12.5%",
       icon: Activity,
       color: "text-primary",
     },
     {
       title: "Executed Swaps",
-      value: "1,089",
+      value: analytics.executedSwaps.toString(),
       change: "+8.2%",
       icon: Zap,
       color: "text-status-online",
     },
     {
       title: "Total Volume",
-      value: `$${formatAmount(4567890, 0)}`,
+      value: `$${formatAmount(analytics.totalVolume, 0)}`,
       change: "+23.1%",
       icon: DollarSign,
       color: "text-chart-2",
     },
     {
       title: "Success Rate",
-      value: "87.3%",
+      value: `${analytics.successRate.toFixed(1)}%`,
       change: "+2.4%",
       icon: TrendingUp,
       color: "text-chart-3",
@@ -63,69 +84,6 @@ export default function AnalyticsDashboard() {
             </Card>
           );
         })}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {[
-              { token: "ETH → USDC", amount: "1.5 ETH", time: "2 mins ago", status: "success" },
-              { token: "WBTC → DAI", amount: "0.05 WBTC", time: "5 mins ago", status: "pending" },
-              { token: "USDT → ETH", amount: "5000 USDT", time: "12 mins ago", status: "success" },
-              { token: "DAI → WBTC", amount: "10000 DAI", time: "18 mins ago", status: "failed" },
-            ].map((activity, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover-elevate"
-              >
-                <div className="space-y-1">
-                  <p className="font-medium text-sm">{activity.token}</p>
-                  <p className="text-xs text-muted-foreground">{activity.time}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-mono text-sm">{activity.amount}</p>
-                  <div className={`text-xs ${
-                    activity.status === "success" ? "text-status-online" :
-                    activity.status === "pending" ? "text-chart-4" :
-                    "text-status-busy"
-                  }`}>
-                    {activity.status}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Pairs</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {[
-              { pair: "ETH / USDC", volume: "$1.2M", trades: "342" },
-              { pair: "WBTC / DAI", volume: "$890K", trades: "256" },
-              { pair: "USDT / ETH", volume: "$756K", trades: "189" },
-              { pair: "DAI / USDC", volume: "$623K", trades: "134" },
-            ].map((pair, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover-elevate"
-              >
-                <div className="space-y-1">
-                  <p className="font-medium text-sm">{pair.pair}</p>
-                  <p className="text-xs text-muted-foreground">{pair.trades} trades</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-mono font-semibold">{pair.volume}</p>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
