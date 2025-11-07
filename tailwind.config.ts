@@ -9,6 +9,7 @@ export default {
         lg: ".5625rem", /* 9px */
         md: ".375rem", /* 6px */
         sm: ".1875rem", /* 3px */
+        "2xl": "1rem", /* 16px for swap cards */
       },
       colors: {
         // Flat / base colors (regular buttons)

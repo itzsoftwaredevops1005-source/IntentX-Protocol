@@ -1,0 +1,145 @@
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import IntentCard from "./IntentCard";
+import { FileX } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+export default function IntentDashboard() {
+  const { toast } = useToast();
+  
+  const [intents] = useState([
+    {
+      id: "1",
+      sourceToken: "ETH",
+      targetToken: "USDC",
+      sourceAmount: "1.5",
+      status: "executed" as const,
+      createdAt: "2025-01-15T10:30:00",
+      executedAmount: "2775.00",
+    },
+    {
+      id: "2",
+      sourceToken: "WBTC",
+      targetToken: "DAI",
+      sourceAmount: "0.05",
+      status: "pending" as const,
+      createdAt: "2025-01-15T11:00:00",
+    },
+    {
+      id: "3",
+      sourceToken: "USDT",
+      targetToken: "ETH",
+      sourceAmount: "5000",
+      status: "pending" as const,
+      createdAt: "2025-01-15T09:15:00",
+    },
+    {
+      id: "4",
+      sourceToken: "DAI",
+      targetToken: "WBTC",
+      sourceAmount: "10000",
+      status: "cancelled" as const,
+      createdAt: "2025-01-15T08:00:00",
+    },
+  ]);
+
+  const handleCancel = (id: string) => {
+    console.log("Cancelling intent:", id);
+    toast({
+      title: "Intent Cancelled",
+      description: "Your swap intent has been cancelled successfully.",
+    });
+  };
+
+  const filterIntents = (status?: string) => {
+    if (!status) return intents;
+    return intents.filter((intent) => intent.status === status);
+  };
+
+  const EmptyState = ({ message }: { message: string }) => (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <FileX className="w-16 h-16 text-muted-foreground mb-4" />
+      <p className="text-lg font-medium text-muted-foreground">{message}</p>
+    </div>
+  );
+
+  return (
+    <div className="w-full max-w-6xl mx-auto">
+      <div className="mb-6">
+        <h2 className="text-3xl font-bold mb-2">Intent Dashboard</h2>
+        <p className="text-muted-foreground">
+          Track and manage your swap intents
+        </p>
+      </div>
+
+      <Tabs defaultValue="all" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsTrigger value="all" data-testid="tab-all">
+            All ({intents.length})
+          </TabsTrigger>
+          <TabsTrigger value="pending" data-testid="tab-pending">
+            Pending ({filterIntents("pending").length})
+          </TabsTrigger>
+          <TabsTrigger value="executed" data-testid="tab-executed">
+            Executed ({filterIntents("executed").length})
+          </TabsTrigger>
+          <TabsTrigger value="cancelled" data-testid="tab-cancelled">
+            Cancelled ({filterIntents("cancelled").length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all" className="space-y-4">
+          {intents.length === 0 ? (
+            <EmptyState message="No intents yet. Create your first swap intent!" />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {intents.map((intent) => (
+                <IntentCard
+                  key={intent.id}
+                  {...intent}
+                  onCancel={intent.status === "pending" ? handleCancel : undefined}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="pending" className="space-y-4">
+          {filterIntents("pending").length === 0 ? (
+            <EmptyState message="No pending intents" />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filterIntents("pending").map((intent) => (
+                <IntentCard key={intent.id} {...intent} onCancel={handleCancel} />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="executed" className="space-y-4">
+          {filterIntents("executed").length === 0 ? (
+            <EmptyState message="No executed intents yet" />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filterIntents("executed").map((intent) => (
+                <IntentCard key={intent.id} {...intent} />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="cancelled" className="space-y-4">
+          {filterIntents("cancelled").length === 0 ? (
+            <EmptyState message="No cancelled intents" />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filterIntents("cancelled").map((intent) => (
+                <IntentCard key={intent.id} {...intent} />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
