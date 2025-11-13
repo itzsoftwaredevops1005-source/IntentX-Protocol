@@ -377,9 +377,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📧 Contact
 
-Project built by: [Your Name]
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Twitter: [@yourhandle](https://twitter.com/yourhandle)
+Project built by: [Abdulganiyyu Mustapha Muhammad]
+- GitHub: [@itzsoftwaredevops1005-source](https://github.com/itzsoftwaredevops1005-source)
+- Twitter: [@AbdulganiyyuMM](https://x.com/AbdulganiyyuMM?t=6Ml_5QijRDa1XjICMwIfuQ&s=09)
 
 ---
 
