@@ -4,13 +4,57 @@
 
 ![IntentX Banner](https://img.shields.io/badge/DeFi-Speedway-blue?style=for-the-badge)
 ![BlockDAG](https://img.shields.io/badge/BlockDAG-Buildathon-purple?style=for-the-badge)
+![Wave 2](https://img.shields.io/badge/Wave%202-Complete-success?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 
 **Intent-based swap protocol with Account Abstraction (EIP-4337) and AI-powered route optimization**
 
-[Demo](https://intentx.replit.app) • [Documentation](#documentation) • [Smart Contracts](#smart-contracts)
+[Demo](https://intentx.replit.app) • [Wave 2 Docs](docs/WAVE2.md) • [Smart Contracts](#smart-contracts)
 
 </div>
+
+---
+
+## 📢 Wave 2 Update
+
+**Wave 2 Status:** ✅ Complete
+
+IntentX Wave 2 delivers a comprehensive working demo showcasing the complete architecture:
+
+- ✅ **Smart Contract Scaffolds** - IntentRegistry.sol & ExecutionManager.sol with full test suite
+- ✅ **Mock Backend API** - Express server with intent engine and blockchain simulation
+- ✅ **Multi-Page Frontend** - Dashboard, Intent Lab, and Vaults with real-time updates
+- ✅ **Full Integration** - Frontend ↔ Backend ↔ Smart Contracts working demo
+- ✅ **Documentation** - Comprehensive [Wave 2 documentation](docs/WAVE2.md)
+
+### Quick Wave 2 Demo
+
+```bash
+# Install dependencies
+npm install
+
+# Start backend server (in new terminal)
+cd server
+npm install
+node src/index.js
+
+# Start frontend (in project root)
+npm run dev
+
+# Run smart contract tests
+cd contracts
+npm install
+npx hardhat test
+```
+
+Visit `http://localhost:5000` and explore:
+1. **Dashboard** - View intent statistics and recent activity
+2. **Intent Lab** - Create and execute intents with one click
+3. **Vaults** - Preview automated yield strategies
+
+**Demo Video:** [To be uploaded]
+
+See [docs/WAVE2.md](docs/WAVE2.md) for complete documentation.
 
 ---
 

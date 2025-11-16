@@ -1,0 +1,18 @@
+{
+  "name": "intentx-backend",
+  "version": "2.0.0",
+  "description": "IntentX Backend Server - Wave 2 Demo",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
+  },
+  "keywords": ["intentx", "defi", "blockchain", "wave2"],
+  "author": "IntentX Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "ethers": "^6.9.0"
+  }
+}
