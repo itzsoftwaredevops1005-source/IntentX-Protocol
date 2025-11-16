@@ -249,6 +249,44 @@ Logo and social links
 
 **Demo Video Link:** [To be recorded and uploaded]
 
+## ⚠️ Critical Deployment Notes
+
+### Smart Contract Setup
+
+When deploying the smart contracts to a real blockchain (Wave 3), follow these critical steps:
+
+1. **Deploy IntentRegistry Contract**
+   ```javascript
+   const IntentRegistry = await ethers.getContractFactory("IntentRegistry");
+   const registry = await IntentRegistry.deploy();
+   await registry.waitForDeployment();
+   ```
+
+2. **Deploy ExecutionManager Contract**
+   ```javascript
+   const ExecutionManager = await ethers.getContractFactory("ExecutionManager");
+   const manager = await ExecutionManager.deploy(await registry.getAddress());
+   await manager.waitForDeployment();
+   ```
+
+3. **⚠️ CRITICAL: Authorize ExecutionManager as Manager**
+   ```javascript
+   // This step is MANDATORY for the system to work
+   await registry.authorizeManager(await manager.getAddress());
+   ```
+
+**Why This Matters:**
+- The `IntentRegistry.updateIntentStatus()` function is protected by access control
+- Only the owner or explicitly authorized managers can update intent status
+- The `ExecutionManager` needs to be authorized to update status when executing intents
+- Forgetting this step will cause all intent executions to fail
+
+**Security Model:**
+- `IntentRegistry` owner can authorize/revoke managers
+- `ExecutionManager` owner can authorize/revoke executors
+- Status updates are restricted to prevent unauthorized manipulation
+- Clean ownership transfer automatically revokes previous owner privileges
+
 ## 🔄 Mock vs Real Implementation
 
 ### Current Mock Implementations
