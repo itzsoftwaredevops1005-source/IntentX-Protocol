@@ -198,10 +198,21 @@ export default function IntentForm() {
           {parsedIntent && (
             <div className="mt-6 space-y-4">
               <div className="p-4 bg-muted rounded-md space-y-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="default">Parsed Result</Badge>
                   <Badge variant="outline">{parsedIntent.source}</Badge>
+                  {parsedIntent.confidence !== undefined && (
+                    <Badge variant={parsedIntent.confidence > 0.7 ? 'default' : 'outline'}>
+                      {Math.round(parsedIntent.confidence * 100)}% confidence
+                    </Badge>
+                  )}
                 </div>
+
+                {parsedIntent.warning && (
+                  <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md text-sm text-destructive">
+                    ⚠️ {parsedIntent.warning}
+                  </div>
+                )}
                 
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
@@ -243,13 +254,17 @@ export default function IntentForm() {
               <Button 
                 onClick={handleSubmitParsedIntent}
                 className="w-full gap-2"
-                disabled={createIntentMutation.isPending}
+                disabled={createIntentMutation.isPending || (parsedIntent.usedFallback && parsedIntent.confidence < 0.5)}
                 data-testid="button-submit-parsed-intent"
               >
                 {createIntentMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Submitting Intent...
+                  </>
+                ) : (parsedIntent.usedFallback && parsedIntent.confidence < 0.5) ? (
+                  <>
+                    Cannot Submit - Low Confidence
                   </>
                 ) : (
                   <>
@@ -258,6 +273,11 @@ export default function IntentForm() {
                   </>
                 )}
               </Button>
+              {parsedIntent.usedFallback && parsedIntent.confidence < 0.5 && (
+                <p className="text-xs text-muted-foreground text-center">
+                  Try rephrasing your intent or use the manual form below
+                </p>
+              )}
             </div>
           )}
         </CardContent>

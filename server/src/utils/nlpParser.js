@@ -59,16 +59,22 @@ class NLPParser {
 
       // Fallback to regex-based parsing
       const regexResult = this.parseWithRegex(intentText);
+      
+      // Check if we detected a valid pattern or fell back to defaults
+      const usedFallback = regexResult.confidence < 0.5;
+      
       return {
         success: true,
         source: 'regex',
+        usedFallback,
+        warning: usedFallback ? 'Could not fully parse intent - please check the suggested values' : null,
         ...regexResult,
       };
     } catch (error) {
       return {
         success: false,
         error: error.message,
-        source: 'mock',
+        source: 'error',
       };
     }
   }
@@ -85,7 +91,11 @@ class NLPParser {
     const action = this.extractAction(normalizedText);
 
     // Extract amounts and tokens
-    const { amount, fromToken, toToken } = this.extractTokensAndAmount(normalizedText);
+    const parseResult = this.extractTokensAndAmount(normalizedText);
+    const { amount, fromToken, toToken, matched } = parseResult;
+
+    // Calculate confidence based on whether we matched a pattern
+    const confidence = matched ? 0.92 : 0.3;
 
     // Calculate estimates
     const sourceAmount = amount;
@@ -109,7 +119,7 @@ class NLPParser {
       estimatedGas: '90000',
       expectedYield: estimatedOutput.toFixed(6),
       slippage: 0.5,
-      confidence: 0.92,
+      confidence,
     };
   }
 
@@ -143,15 +153,17 @@ class NLPParser {
           amount: parseFloat(match[1]),
           fromToken: match[2].toUpperCase(),
           toToken: match[3].toUpperCase(),
+          matched: true,
         };
       }
     }
 
-    // Default fallback
+    // Default fallback - indicate we couldn't parse
     return {
       amount: 1,
       fromToken: 'ETH',
       toToken: 'USDC',
+      matched: false,
     };
   }
 

@@ -22,13 +22,48 @@ exports.createIntent = async (req, res) => {
       });
     }
 
+    // Validate numeric types and ranges
+    const numericSourceAmount = parseFloat(sourceAmount);
+    const numericMinTargetAmount = parseFloat(minTargetAmount);
+    const numericSlippage = parseFloat(slippage || 0.5);
+
+    if (isNaN(numericSourceAmount) || numericSourceAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid sourceAmount: must be a positive number',
+      });
+    }
+
+    if (isNaN(numericMinTargetAmount) || numericMinTargetAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid minTargetAmount: must be a positive number',
+      });
+    }
+
+    if (isNaN(numericSlippage) || numericSlippage < 0 || numericSlippage > 100) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid slippage: must be between 0 and 100',
+      });
+    }
+
+    // Validate Ethereum addresses
+    const addressRegex = /^0x[a-fA-F0-9]{40}$/;
+    if (!addressRegex.test(sourceToken) || !addressRegex.test(targetToken)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid token addresses: must be valid Ethereum addresses',
+      });
+    }
+
     // Create intent
     const result = await intentEngine.createIntent({
       sourceToken,
       targetToken,
-      sourceAmount,
-      minTargetAmount,
-      slippage: slippage || 0.5,
+      sourceAmount: numericSourceAmount.toString(),
+      minTargetAmount: numericMinTargetAmount.toString(),
+      slippage: numericSlippage,
       user: user || '0x0000000000000000000000000000000000000000',
       signature: signature || null,
     });
