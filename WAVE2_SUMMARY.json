@@ -1,0 +1,93 @@
+{
+  "branch": "main",
+  "wave": "Wave 2 - Intent System Demo",
+  "description": "Fully functional 3-part intent-based trading system with smart contracts, backend API, and React frontend",
+  "contracts": [
+    "contracts/IntentRegistry.sol",
+    "contracts/ExecutionManager.sol",
+    "contracts/test/IntentRegistry.test.js"
+  ],
+  "server": {
+    "main": "server/src/index.js",
+    "routes": "server/src/routes/intentRoutes.js",
+    "controllers": "server/src/controllers/intentController.js",
+    "utilities": [
+      "server/src/utils/intentEngine.js",
+      "server/src/utils/blockchainSim.js",
+      "server/src/utils/nlpParser.js"
+    ],
+    "data": "server/src/data/intents.json"
+  },
+  "client": {
+    "main": "client/src/App.tsx",
+    "pages": [
+      "client/src/pages/Dashboard.jsx",
+      "client/src/pages/IntentLab.jsx",
+      "client/src/pages/Vaults.jsx"
+    ],
+    "components": [
+      "client/src/components/Navbar.jsx",
+      "client/src/components/IntentForm.jsx"
+    ]
+  },
+  "features": {
+    "contracts": [
+      "IntentRegistry with full CRUD operations",
+      "ExecutionManager with authorized executor system",
+      "Comprehensive test coverage",
+      "Event emission and status tracking"
+    ],
+    "api": [
+      "POST /api/intent/parse - Natural language intent parsing with regex and optional OpenAI",
+      "POST /api/intents - Create new intent",
+      "GET /api/intents - Get all intents",
+      "POST /api/intents/:id/execute - Execute intent",
+      "POST /api/intents/:id/cancel - Cancel intent",
+      "GET /api/statistics - Intent statistics"
+    ],
+    "frontend": [
+      "Natural language intent parser (e.g., 'Swap 1 ETH to USDC')",
+      "Real-time intent parsing with AI-powered route optimization",
+      "Manual form fallback for advanced users",
+      "Intent execution and status tracking",
+      "Dashboard with statistics and intent history",
+      "Dark/light theme support",
+      "Wallet connection support"
+    ]
+  },
+  "technology_stack": {
+    "contracts": "Solidity 0.8.20, Hardhat, OpenZeppelin",
+    "backend": "Node.js, Express, ethers.js, Optional OpenAI integration",
+    "frontend": "React, Vite, TailwindCSS, shadcn/ui, TanStack Query",
+    "storage": "In-memory JSON (intents.json)"
+  },
+  "demo_flow": {
+    "step_1": "User enters natural language intent: 'Swap 1 ETH to USDC'",
+    "step_2": "System parses intent using NLP (regex or OpenAI)",
+    "step_3": "Displays parsed intent with route optimization",
+    "step_4": "User submits intent to blockchain (simulated)",
+    "step_5": "Intent is registered and queued for execution",
+    "step_6": "User clicks execute to simulate blockchain execution",
+    "step_7": "Intent status updates to completed with transaction details"
+  },
+  "run_instructions": {
+    "contracts_test": "npx hardhat test",
+    "contracts_compile": "npx hardhat compile",
+    "server_dev": "cd server && npm run dev (runs on port 3001)",
+    "client_dev": "npm run dev (integrated Vite + Express on port 5000)",
+    "full_stack": "npm run dev (starts both frontend and backend)"
+  },
+  "demo_video": "<insert-demo-video-link-here>",
+  "next_steps": [
+    "Wave 3: Deploy to BlockDAG testnet",
+    "Real DEX integration (Uniswap, SushiSwap)",
+    "Production-ready authentication",
+    "Advanced AI-powered route optimization",
+    "Multi-chain support"
+  ],
+  "documentation": {
+    "main": "README.md",
+    "wave2_specific": "docs/WAVE2.md",
+    "demo_script": "docs/DEMO_SCRIPT.md"
+  }
+}
