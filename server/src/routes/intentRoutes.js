@@ -13,6 +13,9 @@ router.get('/health', intentController.healthCheck);
 // Statistics
 router.get('/statistics', intentController.getStatistics);
 
+// Parse natural language intent
+router.post('/intent/parse', intentController.parseIntent);
+
 // Intent operations
 router.post('/intents', intentController.createIntent);
 router.get('/intents', intentController.getAllIntents);

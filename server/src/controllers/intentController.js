@@ -5,6 +5,7 @@
 
 const intentEngine = require('../utils/intentEngine');
 const blockchainSim = require('../utils/blockchainSim');
+const nlpParser = require('../utils/nlpParser');
 
 /**
  * Create a new intent
@@ -215,6 +216,42 @@ exports.getStatistics = (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching statistics:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Parse natural language intent
+ */
+exports.parseIntent = async (req, res) => {
+  try {
+    const { intent } = req.body;
+
+    if (!intent || typeof intent !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing or invalid "intent" field in request body',
+      });
+    }
+
+    const result = await nlpParser.parseIntent(intent);
+
+    if (result.success) {
+      return res.status(200).json({
+        success: true,
+        ...result,
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        error: result.error,
+      });
+    }
+  } catch (error) {
+    console.error('Error parsing intent:', error);
     return res.status(500).json({
       success: false,
       error: error.message,
